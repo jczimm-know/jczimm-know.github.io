@@ -1,3 +1,13 @@
+Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}
+
 var unread = 0;
 
 var pusher = new Pusher("50ed18dd967b455393ed");
@@ -7,17 +17,13 @@ subredditChannel.bind("new-listing", function(listing) {
     process(listing);
 });
 
-var last;
+var last, all = [];
 
 function process(listing) {
     var title = listing.title.trim();
 
-    var newTitle = title.replace(/^(til|today i learned) (that )?/gi, "");
-    if (title === newTitle) // make sure it matches ^
-        return;
-
-    if (/^(about|why|of)/gi.test(newTitle)) // make sure the stripped title can be understood
-        return;
+    var newTitle = process(title);
+    if (newTitle === false) return;
 
     title = newTitle.charAt(0).toUpperCase() + newTitle.slice(1);
 
@@ -44,4 +50,29 @@ function process(listing) {
         .text(title);
 
     last = listing;
+}
+
+function process(title) {
+    var newTitle = title.replace(/^(til|today i learned) (that )?/gi, "");
+    if (title === newTitle) // make sure it matches ^
+        return false;
+
+    if (/^(about|why|of)/gi.test(newTitle) || /(me|i|my)/gi.test(newTitle)) // make sure the stripped title can be understood
+        return false;
+
+    var wordsInNewTitle = newTitle.split(" "), entry, wordsInEntry;
+    for (e = 0; e < all.length; e++) {
+        entry = all[e];
+        for (i = 0; i < wordsInNewTitle.length; i++) {
+            wordsInEntry = entry.split(" ");
+            for (j = 0; j < wordsInEntry.length; j++) {
+
+            }
+        }
+    }
+
+    all.push(newTitle);
+
+    // if `all` contains `newTitle`, return `newTitle`, else return `false`
+    return (all.contains(newTitle) && newTitle);
 }
