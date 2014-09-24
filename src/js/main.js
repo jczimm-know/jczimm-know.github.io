@@ -1,12 +1,17 @@
-Array.prototype.contains = function(obj) {
-    var i = this.length;
+var arrayContains = function(arr, obj) {
+    var i = arr.length;
     while (i--) {
-        if (this[i] === obj) {
+        if (arr[i] === obj) {
             return true;
         }
     }
     return false;
 }
+
+var lexer = new Lexer();
+var tagger = new POSTagger();
+
+var threshold = 0.3;
 
 var unread = 0;
 
@@ -22,7 +27,7 @@ var last, all = [];
 function process(listing) {
     var title = listing.title.trim();
 
-    var newTitle = process(title);
+    var newTitle = processTitle(title);
     if (newTitle === false) return;
 
     title = newTitle.charAt(0).toUpperCase() + newTitle.slice(1);
@@ -52,27 +57,46 @@ function process(listing) {
     last = listing;
 }
 
-function process(title) {
-    var newTitle = title.replace(/^(til|today i learned) (that )?/gi, "");
-    if (title === newTitle) // make sure it matches ^
+function processTitle(title) {
+    var newTitle = title.replace(/^(til|today i learned) (that( )?)?/gi, "");
+    if (title === newTitle || newTitle === "") // make sure it matches ^
         return false;
 
-    if (/^(about|why|of)/gi.test(newTitle) || /(me|i|my)/gi.test(newTitle)) // make sure the stripped title can be understood
+    // make sure the stripped title can be understood
+    if (/^(about |why |of )/gi.test(newTitle) || /(me |i |my )/gi.test(newTitle))
         return false;
 
-    var wordsInNewTitle = newTitle.split(" "), entry, wordsInEntry;
-    for (e = 0; e < all.length; e++) {
-        entry = all[e];
-        for (i = 0; i < wordsInNewTitle.length; i++) {
-            wordsInEntry = entry.split(" ");
-            for (j = 0; j < wordsInEntry.length; j++) {
-
-            }
-        }
+    var tags = tagger.tag(lexer.lex(newTitle));
+    var sigWordsInNewTitle = [];
+    for (it in tags) {
+        var word = tags[it][0];
+        var POS = tags[it][1];
+        var f = POS[0];
+        // pick out the verbs, the nouns, the adj, the adv, the prep, the foreign words, and the numbers
+        if (f === "V" || f === "N" || f === "J" || f === "R" ||
+            POS === "PRP" || POS === "FW" || POS === "LS" || POS === "CD")
+            sigWordsInNewTitle.push(word);
     }
 
-    all.push(newTitle);
+    var wordsInEntry;
+    var matches = 0;
+    all.forEach(function(entry) { // for each entry,
+        if (entry !== title) {
+            for (i = 0; i < sigWordsInNewTitle.length; i++) { // for all the words in the latest title,
+                wordsInEntry = entry.split(" ");
+                for (j = 0; j < wordsInEntry.length; j++) { // for all the words in the entries,
+                    // if there is a word overlap between an old title and the latest title,
+                    if (sigWordsInNewTitle[i] === wordsInEntry[j])
+                        matches++; // increment counter
+                }
+            }
+        }
+    });
+
+    var slength = sigWordsInNewTitle.length;
+    if ((matches - slength) / slength < threshold) // some sort of "precision formula" ("calculate error"), idk
+        all.push(newTitle);
 
     // if `all` contains `newTitle`, return `newTitle`, else return `false`
-    return (all.contains(newTitle) && newTitle);
+    return (arrayContains(all, newTitle) && newTitle);
 }
