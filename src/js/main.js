@@ -96,6 +96,7 @@ function processTitle(title) {
     var slength = sigWordsInNewTitle.length;
     if ((matches - slength) / slength < threshold) // some sort of "precision formula" ("calculate error"), idk
         all.push(newTitle);
+    else console.log(newTitle);
 
     // if `all` contains `newTitle`, return `newTitle`, else return `false`
     return (arrayContains(all, newTitle) && newTitle);
