@@ -15,8 +15,15 @@ var threshold = 0.3;
 
 var unread = 0;
 
+$(".status").text('connecting...');
+
 var pusher = new Pusher("50ed18dd967b455393ed");
 var subredditChannel = pusher.subscribe("todayilearned");
+
+
+subredditChannel.bind("pusher:subscription_succeeded", function() {
+    $(".status").text('waiting for posts...');
+});
 
 subredditChannel.bind("new-listing", function(listing) {
     process(listing);
@@ -94,9 +101,12 @@ function processTitle(title) {
     });
 
     var slength = sigWordsInNewTitle.length;
-    if ((matches - slength) / slength < threshold) // some sort of "precision formula" ("calculate error"), idk
+    if (matches / slength < threshold)
         all.push(newTitle);
-    else console.log(newTitle);
+    else {
+        console.log("Blocked as repetitive: " + newTitle);
+        return false;
+    }
 
     // if `all` contains `newTitle`, return `newTitle`, else return `false`
     return (arrayContains(all, newTitle) && newTitle);
