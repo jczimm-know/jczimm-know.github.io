@@ -73,7 +73,25 @@ function processTitle(title) {
     if (/^(about |why |of )/gi.test(newTitle) || /(me |i |my )/gi.test(newTitle))
         return false;
 
-    var tags = tagger.tag(lexer.lex(newTitle));
+    var sigWordsInNewTitle = getSigWords(newTitle);
+    var matches = getMatches(sigWordsInNewTitle, newTitle);
+
+    newTitle = htmlDecode(newTitle);
+
+    var slength = sigWordsInNewTitle.length;
+    if (matches / slength < threshold && !arrayContains(all, newTitle))
+        all.push(newTitle);
+    else {
+        console.log("Blocked as repetitive: " + newTitle);
+        return false;
+    }
+
+    // if `all` contains `newTitle`, return `newTitle`, else return `false`
+    return (arrayContains(all, newTitle) && newTitle);
+}
+
+function getSigWords(title) {
+    var tags = tagger.tag(lexer.lex(title));
     var sigWordsInNewTitle = [];
     for (it in tags) {
         var word = tags[it][0];
@@ -85,10 +103,13 @@ function processTitle(title) {
             sigWordsInNewTitle.push(word);
     }
 
-    var wordsInEntry;
-    var matches = 0;
+    return sigWordsInNewTitle;
+}
+
+function getMatches(sigWordsInNewTitle, newTitle) {
+    var wordsInEntry, matches = 0;
     all.forEach(function(entry) { // for each entry,
-        if (entry !== title) {
+        if (entry !== newTitle) { // if it's a different entry than this one,
             for (i = 0; i < sigWordsInNewTitle.length; i++) { // for all the words in the latest title,
                 wordsInEntry = entry.split(" ");
                 for (j = 0; j < wordsInEntry.length; j++) { // for all the words in the entries,
@@ -99,19 +120,7 @@ function processTitle(title) {
             }
         }
     });
-
-    var slength = sigWordsInNewTitle.length;
-    if (matches / slength < threshold)
-        all.push(newTitle);
-    else {
-        console.log("Blocked as repetitive: " + newTitle);
-        return false;
-    }
-
-    newTitle = htmlDecode(newTitle);
-
-    // if `all` contains `newTitle`, return `newTitle`, else return `false`
-    return (arrayContains(all, newTitle) && newTitle);
+    return matches;
 }
 
 
