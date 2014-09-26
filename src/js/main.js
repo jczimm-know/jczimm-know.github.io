@@ -22,7 +22,7 @@ var subredditChannel = pusher.subscribe("todayilearned");
 
 
 subredditChannel.bind("pusher:subscription_succeeded", function() {
-    $(".status").text('waiting for posts...');
+    $(".status").text('waiting for a new post...');
 });
 
 subredditChannel.bind("new-listing", function(listing) {
