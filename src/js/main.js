@@ -108,6 +108,15 @@ function processTitle(title) {
         return false;
     }
 
+    newTitle = htmlDecode(newTitle);
+
     // if `all` contains `newTitle`, return `newTitle`, else return `false`
     return (arrayContains(all, newTitle) && newTitle);
+}
+
+
+function htmlDecode(input) {
+    var e = document.createElement('div');
+    e.innerHTML = input;
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
