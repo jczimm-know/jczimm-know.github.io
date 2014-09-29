@@ -79,7 +79,7 @@ function processTitle(title) {
     newTitle = htmlDecode(newTitle);
 
     //var slength = sigWordsInNewTitle.length;
-    if (/*matches / slength < threshold && */ !arrayContains(all, newTitle);)
+    if (/*matches / slength < threshold && */ !arrayContains(all, newTitle))
         all.push(newTitle);
     else {
         console.log("Blocked as repetitive: " + newTitle);
