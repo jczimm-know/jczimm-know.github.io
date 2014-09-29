@@ -73,13 +73,14 @@ function processTitle(title) {
     if (/^(about |why |of )/gi.test(newTitle) || /(me |i |my )/gi.test(newTitle))
         return false;
 
-    var sigWordsInNewTitle = getSigWords(newTitle);
-    var matches = getMatches(sigWordsInNewTitle, newTitle);
+    /*var sigWordsInNewTitle = getSigWords(newTitle);
+    var matches = getMatches(sigWordsInNewTitle, newTitle);*/
 
     newTitle = htmlDecode(newTitle);
+    var allHasThis = arrayContains(all, newTitle);
 
-    var slength = sigWordsInNewTitle.length;
-    if (matches / slength < threshold && !arrayContains(all, newTitle))
+    //var slength = sigWordsInNewTitle.length;
+    if (/*matches / slength < threshold && */ !allHasThis)
         all.push(newTitle);
     else {
         console.log("Blocked as repetitive: " + newTitle);
@@ -87,7 +88,7 @@ function processTitle(title) {
     }
 
     // if `all` contains `newTitle`, return `newTitle`, else return `false`
-    return (arrayContains(all, newTitle) && newTitle);
+    return (allHasThis && newTitle);
 }
 
 function getSigWords(title) {
